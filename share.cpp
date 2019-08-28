@@ -81,6 +81,11 @@ void share_add(YAAMP_CLIENT *client, YAAMP_JOB *job, bool valid, char *extranonc
 	g_shares_counter++;
 	share_add_worker(client, job, valid, ntime, share_diff, error_number);
 
+        if (valid)
+                printf("VALID   %0.4f/%0.4f share", client->difficulty_actual, share_diff);
+        else
+                printf("INVALID %0.4f/%0.4f share", client->difficulty_actual, share_diff);
+
 	YAAMP_SHARE *share = new YAAMP_SHARE;
 	memset(share, 0, sizeof(YAAMP_SHARE));
 

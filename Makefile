@@ -1,7 +1,7 @@
 
-CC=gcc
+CC=g++
 
-CFLAGS= -g -march=native
+CFLAGS= -O3 -g -march=native
 SQLFLAGS= `mysql_config --cflags --libs`
 
 # Comment this line to disable address check on login,
@@ -17,7 +17,7 @@ LDLIBS+=-lmysqlclient
 SOURCES=stratum.cpp db.cpp coind.cpp coind_aux.cpp coind_template.cpp coind_submit.cpp util.cpp list.cpp \
 	rpc.cpp job.cpp job_send.cpp job_core.cpp merkle.cpp share.cpp socket.cpp coinbase.cpp \
 	client.cpp client_submit.cpp client_core.cpp client_difficulty.cpp remote.cpp remote_template.cpp \
-	user.cpp object.cpp json.cpp base58.cpp
+	user.cpp object.cpp json.cpp base58.cpp nightcap_helper.cpp
 
 CFLAGS += -DHAVE_CURL
 SOURCES += rpc_curl.cpp
@@ -55,9 +55,10 @@ clean:
 	rm -f *.o
 	rm -f algos/*.o
 	rm -f algos/*.a
-	rm -f sha3/*.o
-	rm -f sha3/*.a
-	rm -f algos/ar2/*.o
+	rm -f algos/crypto/*.o
+	rm -f iniparser/*.a
+	rm -f iniparser/*.0
+	rm -f iniparser/src/*.o
 
 install: clean all
 	strip -s stratum

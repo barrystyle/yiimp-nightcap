@@ -1,14 +1,22 @@
-
 CC=gcc
-
-#CFLAGS=-c -g -I /usr/include/mysql
-#LDFLAGS=-g
-
 CXXFLAGS = -O2 -I.. -march=native
 CFLAGS= $(CXXFLAGS) -std=gnu99
-LDFLAGS=-O2 -lgmp
+LDFLAGS=-O2 -lm -lstdc++
 
-SOURCES=scrypt.c sha256.c 
+SOURCES=scrypt.c \
+	sha256.c \
+	crypto/Lyra2.c \
+	crypto/Lyra2RE.c \
+	crypto/Sponge.c \
+	crypto/blake.c \
+	crypto/block.cpp \
+	crypto/bmw.c \
+	crypto/cubehash.c \
+	crypto/dag.cpp \
+	crypto/groestl.c \
+	crypto/keccak.c \
+	crypto/skein.c \
+	nightcap.cpp
 
 OBJECTS=$(SOURCES:%.c=%.o) $(SOURCES:%.cpp=%.o)
 OUTPUT=libalgos.a
@@ -25,7 +33,6 @@ $(OUTPUT): $(OBJECTS)
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
-#	$(CC) $(CFLAGS) -std=gnu99 -Wno-pointer-sign -Wno-pointer-to-int-cast -funroll-loops -fvariable-expansion-in-unroller -fmerge-all-constants -fbranch-target-load-optimize2 -fsched2-use-superblocks -falign-loops=16 -falign-functions=16 -falign-jumps=16 -falign-labels=16 -Ofast -flto -fuse-linker-plugin -ftree-loop-if-convert-stores -DUSE_ASM -pg $<
-
 clean:
 	rm -f *.o
+	rm -f crypto/*.o

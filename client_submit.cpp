@@ -1,4 +1,3 @@
-
 #include "stratum.h"
 
 uint64_t lyra2z_height = 0;
@@ -9,6 +8,7 @@ uint64_t lyra2z_height = 0;
 void build_submit_values(YAAMP_JOB_VALUES *submitvalues, YAAMP_JOB_TEMPLATE *templ,
 	const char *nonce1, const char *nonce2, const char *ntime, const char *nonce)
 {
+
 	sprintf(submitvalues->coinbase, "%s%s%s%s", templ->coinb1, nonce1, nonce2, templ->coinb2);
 	int coinbase_len = strlen(submitvalues->coinbase);
 
@@ -31,26 +31,29 @@ void build_submit_values(YAAMP_JOB_VALUES *submitvalues, YAAMP_JOB_TEMPLATE *tem
 #ifdef MERKLE_DEBUGLOG
 	printf("merkle root %s\n", merkleroot.c_str());
 #endif
-	if (!strcmp(g_stratum_algo, "lbry")) {
-		sprintf(submitvalues->header, "%s%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be,
-			templ->claim_be, ntime, templ->nbits, nonce);
-		ser_string_be(submitvalues->header, submitvalues->header_be, 112/4);
-	} else if (strlen(templ->extradata_be) == 128) { // LUX SC
-		sprintf(submitvalues->header, "%s%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be,
-			ntime, templ->nbits, nonce, templ->extradata_be);
-		ser_string_be(submitvalues->header, submitvalues->header_be, 36); // 80+64 / sizeof(u32)
-	} else {
-		sprintf(submitvalues->header, "%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be,
-			ntime, templ->nbits, nonce);
-		ser_string_be(submitvalues->header, submitvalues->header_be, 20);
-	}
+	sprintf(submitvalues->header, "%s%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be, ntime, templ->nbits, nonce, "0000000000000000000000000000000000000000");
+	ser_string_be(submitvalues->header, submitvalues->header_be, 25);
+        binlify(submitvalues->header_bin, submitvalues->header_be);
 
-	binlify(submitvalues->header_bin, submitvalues->header_be);
+        ////////////////////////////////////////////////////////////////////////////////paul has a hot mrs/////////////////
+        unsigned long full_size = get_full_size(templ->height);
+        struct CHashimotoResult res = hashimoto((uint8_t*)submitvalues->header, (uint32_t*)dag, full_size, templ->height);
+        memcpy((char*)submitvalues->header_bin+80,&res.cmix[0],4);
+        memcpy((char*)submitvalues->header_bin+84,&res.cmix[1],4);
+        memcpy((char*)submitvalues->header_bin+88,&res.cmix[2],4);
+        memcpy((char*)submitvalues->header_bin+92,&res.cmix[3],4);
+        memcpy((char*)submitvalues->header_bin+96,&templ->height,4);
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//	printf("%s\n", submitvalues->header_be);
-	int header_len = strlen(submitvalues->header)/2;
-	g_current_algo->hash_function((char *)submitvalues->header_bin, (char *)submitvalues->hash_bin, header_len);
+#if 0
+        char havepeek[100];
+        memset(havepeek,'\0',100);
+        memcpy(havepeek,(char*)submitvalues->header_bin,100);
+        for(unsigned int i=0; i<100; i++) printf("%02hhx", havepeek[i]);
+        printf("\n");
+#endif
 
+	g_current_algo->hash_function((char *)submitvalues->header_bin, (char *)submitvalues->hash_bin, 100);
 	hexlify(submitvalues->hash_hex, submitvalues->hash_bin, 32);
 	string_be(submitvalues->hash_hex, submitvalues->hash_be);
 }
@@ -513,6 +516,19 @@ bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 	uint64_t user_target = diff_to_target(client->difficulty_actual);
 	uint64_t coin_target = decode_compact(templ->nbits);
 	if (templ->nbits && !coin_target) coin_target = 0xFFFF000000000000ULL;
+
+        //////////////////////////////////////////////////////
+        char havepeek[32];
+        memset(havepeek,'\0',32);
+        memcpy(havepeek,(char*)submitvalues.hash_bin,32);
+        printf(" (client->username %s hash ",client->username);
+        unsigned int i = 31;
+        while (i != 0) {
+           printf("%02hhx", havepeek[i]);
+           i--;
+        }
+        printf(")\n");
+        ///////////////////////////////////////////////////////
 
 	if (g_debuglog_hash) {
 		debuglog("%016llx actual\n", hash_int);

@@ -1,5 +1,5 @@
-
 #include "stratum.h"
+#include "nightcap_helper.h"
 
 void coind_getauxblock(YAAMP_COIND *coind)
 {
@@ -298,6 +298,11 @@ YAAMP_JOB_TEMPLATE *coind_create_template(YAAMP_COIND *coind)
 	templ->created = time(NULL);
 	templ->value = json_get_int(json_result, "coinbasevalue");
 	templ->height = json_get_int(json_result, "height");
+
+        ////////////////////////////
+        generate_dag(templ->height);
+        ////////////////////////////
+
 	sprintf(templ->version, "%08x", (unsigned int)json_get_int(json_result, "version"));
 	sprintf(templ->ntime, "%08x", (unsigned int)json_get_int(json_result, "curtime"));
 

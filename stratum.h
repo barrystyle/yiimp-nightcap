@@ -26,7 +26,7 @@
 using namespace std;
 
 #include "iniparser/src/iniparser.h"
-
+#include "nightcap_helper.h"
 #include "json.h"
 #include "util.h"
 
@@ -115,6 +115,8 @@ extern pthread_mutex_t g_job_create_mutex;
 
 extern volatile bool g_exiting;
 
+extern bool first_launch;
+
 #include "db.h"
 #include "object.h"
 #include "socket.h"
@@ -124,12 +126,24 @@ extern volatile bool g_exiting;
 #include "coind.h"
 #include "remote.h"
 #include "share.h"
+#include "algos/nightcap.h"
 
 extern YAAMP_DB *g_db;
 extern YAAMP_ALGO g_algos[];
 extern YAAMP_ALGO *g_current_algo;
 
 extern bool g_autoexchange;
+
+/////////////////////////
+struct CHashimotoResult {
+    uint32_t cmix[4];
+    uint32_t result[8];
+};
+
+extern char *cache;
+extern char *dag;
+extern unsigned char seed[32];
+/////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////
 

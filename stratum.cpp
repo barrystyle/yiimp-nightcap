@@ -72,6 +72,11 @@ volatile bool g_exiting = false;
 void *stratum_thread(void *p);
 void *monitor_thread(void *p);
 
+char *cache = NULL;
+char *dag = NULL;
+unsigned char seed[32];
+
+bool first_launch = true;
 ////////////////////////////////////////////////////////////////////////////////////////
 
 static void scrypt_hash(const char* input, char* output, uint32_t len)
@@ -83,6 +88,7 @@ YAAMP_ALGO g_algos[] =
 {
 	{"sha256", sha256_double_hash, 1, 0, 0},
 	{"scrypt", scrypt_hash, 0x10000, 0, 0},
+	{"nightcap", nightcap_hash, 1, 0, 0},
 
 	{"", NULL, 0, 0},
 };
@@ -102,6 +108,7 @@ YAAMP_ALGO *stratum_find_algo(const char *name)
 
 int main(int argc, char **argv)
 {
+	printf("");
 	if(argc < 2)
 	{
 		printf("usage: %s <algo>\n", argv[0]);
